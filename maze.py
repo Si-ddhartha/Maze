@@ -43,7 +43,52 @@ class Maze:
             neighbors.append(self.grid[cell.x][cell.y + 1]) # Bottom neighbor
         
         return [n for n in neighbors if not n.visited]
-    
+
+class MazeGenerator:
+
+    def __init__(self, maze):
+        self.maze = maze
+
+    def generate_maze(self):
+        stack = []
+        start_cell = self.maze.grid[0][0]
+        stack.append(start_cell)
+
+        start_cell.visited = True
+        while stack:
+            current_cell = stack[-1]
+            neighbors = self.maze.get_neighbors(current_cell)
+
+            if neighbors:
+                next_cell = random.choice(neighbors)
+                self.remove_wall(current_cell, next_cell)
+                next_cell.visited = True
+                stack.append(next_cell)
+            
+            else:
+                stack.pop()
+
+    def remove_wall(self, current, next):
+        dx = next.x - current.x
+        dy = next.y - current.y
+
+        if dx > 0: # Right neighbor
+            current.walls['right'] = False
+            next.walls['left'] = False
+        
+        elif dx < 0: # Left neighbor
+            current.walls['left'] = False
+            next.walls['right'] = False
+        
+        elif dy > 0: # Bottom neighbor
+            current.walls['bottom'] = False
+            next.walls['top'] = False
+        
+        else:
+            current.walls['top'] = False
+            next.walls['bottom'] = False
+
+
 class Visualizer:
 
     def __init__(self, screen, maze):
@@ -81,7 +126,10 @@ def main():
     pygame.display.set_caption('Maze')
 
     maze = Maze(GRID_WIDTH, GRID_HEIGHT)
+    generator = MazeGenerator(maze)
     visualizer = Visualizer(screen, maze)
+
+    generator.generate_maze()
 
     while True:
         for event in pygame.event.get():
