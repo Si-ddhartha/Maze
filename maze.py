@@ -4,6 +4,8 @@ import sys
 import numpy as np
 import random
 
+from algorithms import dfs
+
 from constants import *
 
 class Cell:
@@ -25,7 +27,7 @@ class Maze:
         for row in self.grid:
             for cell in row:
                 cell.visited = False
-                cell.walls = {'top': True, 'bottom': True, 'left': True, 'right': True}
+                # cell.walls = {'top': True, 'bottom': True, 'left': True, 'right': True}
 
     def get_neighbors(self, cell):
         neighbors = []
@@ -43,6 +45,22 @@ class Maze:
             neighbors.append(self.grid[cell.x][cell.y + 1]) # Bottom neighbor
         
         return [n for n in neighbors if not n.visited]
+
+    def check_wall(self, first_cell, second_cell):
+        dx = second_cell.x - first_cell.x
+        dy = second_cell.y - first_cell.y
+
+        if dx > 0: # Right neighbor
+            return not first_cell.walls['right']
+        
+        elif dx < 0: # Left neighbor
+            return not first_cell.walls['left']
+        
+        elif dy > 0: # Bottom neighbor
+            return not first_cell.walls['bottom']
+        
+        else:
+            return not first_cell.walls['top']
 
 class MazeGenerator:
 
@@ -88,7 +106,6 @@ class MazeGenerator:
             current.walls['top'] = False
             next.walls['bottom'] = False
 
-
 class Visualizer:
 
     def __init__(self, screen, maze):
@@ -100,25 +117,41 @@ class Visualizer:
             for cell in row:
                 self.draw_cell(cell)
 
-    def draw_cell(self, cell):
+    def draw_cell(self, cell, color=None):
         x = cell.x * CELL_SIZE
         y = cell.y * CELL_SIZE
 
-        if cell.walls['top']:
-            pygame.draw.line(self.screen, WHITE, (x, y), (x + CELL_SIZE, y))
+        if color:
+            pygame.draw.rect(self.screen, color, (x, y, CELL_SIZE, CELL_SIZE))
         
-        if cell.walls['bottom']:
-            pygame.draw.line(self.screen, WHITE, (x, y + CELL_SIZE), (x + CELL_SIZE, y + CELL_SIZE))
+        else:
+            if cell.walls['top']:
+                pygame.draw.line(self.screen, WHITE, (x, y), (x + CELL_SIZE, y))
+            
+            if cell.walls['bottom']:
+                pygame.draw.line(self.screen, WHITE, (x, y + CELL_SIZE), (x + CELL_SIZE, y + CELL_SIZE))
 
-        if cell.walls['left']:
-            pygame.draw.line(self.screen, WHITE, (x, y), (x, y + CELL_SIZE))
+            if cell.walls['left']:
+                pygame.draw.line(self.screen, WHITE, (x, y), (x, y + CELL_SIZE))
 
-        if cell.walls['right']:
-            pygame.draw.line(self.screen, WHITE, (x + CELL_SIZE, y), (x + CELL_SIZE, y + CELL_SIZE))
+            if cell.walls['right']:
+                pygame.draw.line(self.screen, WHITE, (x + CELL_SIZE, y), (x + CELL_SIZE, y + CELL_SIZE))
 
     def draw_start_end_cell(self):
         pygame.draw.rect(self.screen, RED, (0, 0, CELL_SIZE, CELL_SIZE))
         pygame.draw.rect(self.screen, GREEN, (GRID_WIDTH * CELL_SIZE - CELL_SIZE, GRID_HEIGHT * CELL_SIZE - CELL_SIZE, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE))
+    
+    def draw_final_path_cell(self, cell):
+        x = cell.x * CELL_SIZE
+        y = cell.y * CELL_SIZE
+
+        center_x = x + CELL_SIZE // 2
+        center_y = y + CELL_SIZE // 2
+
+        pygame.draw.circle(self.screen, (255, 255, 255), (center_x, center_y), CELL_SIZE // 5)
+    
+    def update_display(self):
+        pygame.display.update()
 
 def main():
     pygame.init()
@@ -130,6 +163,16 @@ def main():
     visualizer = Visualizer(screen, maze)
 
     generator.generate_maze()
+    maze.reset_maze()
+
+    screen.fill(BLACK)
+    visualizer.draw_grid()
+    visualizer.draw_start_end_cell()
+
+    start = (0, 0)
+    end = (maze.grid_width - 1, maze.grid_height - 1)
+
+    algo_chosen = False
 
     while True:
         for event in pygame.event.get():
@@ -137,9 +180,9 @@ def main():
                 pygame.quit()
                 sys.exit()
 
-        screen.fill(BLACK)
-        visualizer.draw_grid()
-        visualizer.draw_start_end_cell()
+        if not algo_chosen:
+            dfs.dfs(maze, start, end, visualizer)
+            algo_chosen = True
 
         pygame.display.update()
 
