@@ -4,7 +4,9 @@ import sys
 import numpy as np
 import random
 
-from algorithms import dfs
+from menu import Button
+
+from algorithms import dfs, bfs
 
 from constants import *
 
@@ -139,7 +141,7 @@ class Visualizer:
 
     def draw_start_end_cell(self):
         pygame.draw.rect(self.screen, RED, (0, 0, CELL_SIZE, CELL_SIZE))
-        pygame.draw.rect(self.screen, GREEN, (GRID_WIDTH * CELL_SIZE - CELL_SIZE, GRID_HEIGHT * CELL_SIZE - CELL_SIZE, GRID_WIDTH * CELL_SIZE, GRID_HEIGHT * CELL_SIZE))
+        pygame.draw.rect(self.screen, GREEN, (GRID_WIDTH * CELL_SIZE - CELL_SIZE, GRID_HEIGHT * CELL_SIZE - CELL_SIZE, CELL_SIZE, CELL_SIZE))
     
     def draw_final_path_cell(self, cell):
         x = cell.x * CELL_SIZE
@@ -153,10 +155,21 @@ class Visualizer:
     def update_display(self):
         pygame.display.update()
 
+def create_buttons(algorithms):
+    button_list = []
+    x, y = MENU_START
+
+    for algo in algorithms:
+        button_list.append(Button(x, y, algo, algorithms[algo]))
+        x += SPACING + BUTTON_WIDTH
+
+    return button_list
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
     pygame.display.set_caption('Maze')
+    font = pygame.font.SysFont('arial', 15)
 
     maze = Maze(GRID_WIDTH, GRID_HEIGHT)
     generator = MazeGenerator(maze)
@@ -169,20 +182,30 @@ def main():
     visualizer.draw_grid()
     visualizer.draw_start_end_cell()
 
+    algorithms = {
+        'dfs': lambda: dfs.dfs(maze, start, end, visualizer),
+        'bfs': lambda: bfs.bfs(maze, start, end, visualizer),
+    }
+
+    buttons = create_buttons(algorithms)
+    for button in buttons:
+        button.draw(screen, font)
+
     start = (0, 0)
     end = (maze.grid_width - 1, maze.grid_height - 1)
-
-    algo_chosen = False
 
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
-
-        if not algo_chosen:
-            dfs.dfs(maze, start, end, visualizer)
-            algo_chosen = True
+            
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pygame.event.set_blocked(pygame.MOUSEBUTTONDOWN)
+                pos = pygame.mouse.get_pos()
+                for button in buttons:
+                    button.check_click(pos)
+                pygame.event.set_allowed(pygame.MOUSEBUTTONDOWN)
 
         pygame.display.update()
 
