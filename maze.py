@@ -182,6 +182,9 @@ def main():
     visualizer.draw_grid()
     visualizer.draw_start_end_cell()
 
+    start = (0, 0)
+    end = (maze.grid_width - 1, maze.grid_height - 1)
+
     algorithms = {
         'dfs': lambda: dfs.dfs(maze, start, end, visualizer),
         'bfs': lambda: bfs.bfs(maze, start, end, visualizer),
@@ -190,9 +193,6 @@ def main():
     buttons = create_buttons(algorithms)
     for button in buttons:
         button.draw(screen, font)
-
-    start = (0, 0)
-    end = (maze.grid_width - 1, maze.grid_height - 1)
 
     while True:
         for event in pygame.event.get():
@@ -203,8 +203,20 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pygame.event.set_blocked(pygame.MOUSEBUTTONDOWN)
                 pos = pygame.mouse.get_pos()
+
                 for button in buttons:
-                    button.check_click(pos)
+                    print(f'Checking: {button.text} button')
+                    if button.is_clicked(pos):
+                        print(f'{button.text} button clicked.')
+                        screen.fill(BLACK)
+                        visualizer.draw_grid()
+                        visualizer.draw_start_end_cell()
+                        for button in buttons:
+                            button.draw(screen, font)
+
+                        button.run_algo()
+                        break
+                
                 pygame.event.set_allowed(pygame.MOUSEBUTTONDOWN)
 
         pygame.display.update()

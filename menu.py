@@ -14,7 +14,8 @@ class Button:
         text_surf = font.render(self.text, True, (0, 0, 0))
         screen.blit(text_surf, (self.rect.x + (BUTTON_WIDTH // 3), self.rect.y + (BUTTON_HEIGHT // 3.6)))
 
-    def check_click(self, pos):
-        if self.rect.collidepoint(pos):
-            print(self.text)
-            self.callback()
+    def is_clicked(self, pos):
+        return self.rect.collidepoint(pos)
+    
+    def run_algo(self):
+        self.callback()

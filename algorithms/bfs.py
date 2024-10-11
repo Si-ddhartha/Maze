@@ -26,7 +26,7 @@ def bfs(maze, start, end, visualizer):
             if neighbor not in visited and maze.check_wall(current, neighbor):
                 q.append(neighbor)
                 parent_map[neighbor] = current
-                time.sleep(0.05)
+                time.sleep(0.02)
 
         visualizer.draw_cell(current, color = (0, 0, 255))
         visualizer.update_display()
@@ -46,6 +46,6 @@ def bfs(maze, start, end, visualizer):
     for cell in path:
         visualizer.draw_final_path_cell(cell)
         visualizer.update_display()
-        time.sleep(0.02)
+        time.sleep(0.05)
 
     return True

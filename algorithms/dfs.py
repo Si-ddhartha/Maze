@@ -25,10 +25,13 @@ def dfs(maze, start, end, visualizer):
             if neighbor not in visited and maze.check_wall(current, neighbor):
                 stack.append(neighbor)
                 parent_map[neighbor] = current
-                time.sleep(0.2)
+                time.sleep(0.02)
 
         visualizer.draw_cell(current, color = (0, 0, 255))
         visualizer.update_display()
+
+    if maze.grid[end[0]][end[1]] not in parent_map:
+        return False  # No valid path was found
 
     path = []
     current = maze.grid[end[0]][end[1]]
@@ -37,11 +40,11 @@ def dfs(maze, start, end, visualizer):
         current = parent_map.get(current, None)  # Move to the parent cell
 
     path.append(maze.grid[start[0]][start[1]])  # Finally, add the start cell to the path
-    path.reverse() 
+    path.reverse()
 
     for cell in path:
         visualizer.draw_final_path_cell(cell)
         visualizer.update_display()
-        time.sleep(0.1)
+        time.sleep(0.05)
 
-    return False
+    return True
